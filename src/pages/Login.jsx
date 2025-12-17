@@ -41,11 +41,12 @@ export default function Login() {
                 <div className="text-center mb-8">
                     <div className="text-4xl mb-4 text-tech-accent">🔐</div>
                     <h2 className="text-2xl font-bold text-white uppercase tracking-wider">Acceso Restringido</h2>
-                    <p className="text-slate-500 text-sm mt-2 font-medium">Panel de Control Agetronica
+                    <p className="text-slate-500 text-sm mt-2 font-medium">Panel de Control TechStore</p>
+                </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
-                        <label className="block text-xs text-slate-500 mb-2 uppercase font-bold tracking-widest">Ingresa la contraseña</label>
+                        <label className="block text-xs text-slate-500 mb-2 uppercase font-bold tracking-widest">Contraseña Maestra</label>
                         <input
                             type="password"
                             placeholder="••••••••"
@@ -62,7 +63,7 @@ export default function Login() {
                 </form>
 
                 <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">Sistema de seguridad</p>
+                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">Sistema de seguridad activo v2.0</p>
                 </div>
             </div>
         </div>
