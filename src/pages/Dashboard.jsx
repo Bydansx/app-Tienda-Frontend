@@ -1,110 +1,77 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importamos para poder redirigir al usuario
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-    const navigate = useNavigate(); // Hook de navegación
-
-    const [form, setForm] = useState({
-        nombre: '',
-        precio: '',
-        categoria: '',
-        img: ''
-    });
+    const navigate = useNavigate();
+    const [password, setPassword] = useState(''); // Estado para la contraseña
+    const [form, setForm] = useState({ nombre: '', precio: '', categoria: '', img: '' });
 
     const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
+        setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    // --- FUNCIÓN NUEVA: ENVÍO DE DATOS ---
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Evita que la página se recargue sola
-
-        // Validación básica: Si faltan datos, no enviamos nada
-        if (!form.nombre || !form.precio) {
-            alert("Por favor completa al menos el nombre y el precio");
-            return;
-        }
+        e.preventDefault();
 
         try {
-            // Enviamos la "carta" al servidor
-            const respuesta = await fetch('https://app-tienda-vm7j.onrender.com/api/productos',{
-                method: 'POST', // Método para CREAR
-                headers: {
-                    'Content-Type': 'application/json', // Avisamos que enviamos datos JSON
-                },
-                body: JSON.stringify(form) // Convertimos nuestros datos a texto JSON
+            const respuesta = await fetch('https://app-tienda-vm7j.onrender.com/api/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...form, password }) // Enviamos los datos + la contraseña
             });
 
             if (respuesta.ok) {
-                alert("¡Producto creado con éxito!");
-                navigate('/'); // Nos lleva a la tienda para ver el producto nuevo
+                alert("¡Producto publicado con éxito!");
+                navigate('/');
             } else {
-                alert("Error al guardar en el servidor");
+                alert("❌ Contraseña incorrecta o error en el servidor");
             }
-
         } catch (error) {
-            console.error("Error de conexión:", error);
-            alert("No se pudo conectar con el servidor");
+            alert("Error de conexión");
         }
     };
 
     return (
-        <div className="min-h-screen bg-tech-bg text-white p-6 md:p-12">
-            <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-4">
-                <h2 className="text-3xl font-bold">Panel de Administración</h2>
-                <a href="/" className="text-sm text-slate-400 hover:text-white">← Volver a la Tienda</a>
-            </div>
+        <div className="min-h-screen bg-tech-bg text-white p-12 font-sans">
+            <div className="max-w-4xl mx-auto">
+                <h2 className="text-3xl font-bold mb-8 border-b border-slate-700 pb-4 text-tech-accent">Panel de Control Seguro</h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                {/* Formulario */}
-                <div className="bg-tech-card p-8 rounded-xl border border-slate-700">
-                    <h3 className="text-xl font-bold mb-6 text-tech-accent">Nuevo Producto</h3>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm mb-2 text-slate-400">Nombre</label>
-                            <input name="nombre" onChange={handleChange} className="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-tech-accent outline-none" placeholder="Ej: Super Motor" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-tech-card p-6 rounded-xl border border-slate-700 space-y-4">
+                        {/* CAMPO DE CONTRASEÑA */}
+                        <div className="mb-6 p-4 bg-slate-900 rounded-lg border border-yellow-500/30">
+                            <label className="block text-xs font-bold text-yellow-500 mb-2 uppercase tracking-widest">Contraseña Maestra</label>
+                            <input
+                                type="password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-black border border-slate-700 rounded p-2 focus:border-yellow-500 outline-none"
+                                placeholder="Escribe el secreto..."
+                            />
                         </div>
+
+                        {/* RESTO DEL FORMULARIO */}
+                        <input name="nombre" onChange={handleChange} placeholder="Nombre" className="w-full bg-slate-900 border border-slate-700 rounded p-3 mb-4 outline-none focus:border-tech-accent" />
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm mb-2 text-slate-400">Precio</label>
-                                <input name="precio" onChange={handleChange} className="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-tech-accent outline-none" placeholder="$0.00" />
-                            </div>
-                            <div>
-                                <label className="block text-sm mb-2 text-slate-400">Categoría</label>
-                                <select name="categoria" onChange={handleChange} className="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-tech-accent outline-none text-slate-300">
-                                    <option>Seleccionar...</option>
-                                    <option>Electrónica</option>
-                                    <option>Mecatrónica</option>
-                                    <option>Módulos</option>
-                                </select>
-                            </div>
+                            <input name="precio" onChange={handleChange} placeholder="Precio (ej: $10)" className="w-full bg-slate-900 border border-slate-700 rounded p-3 outline-none focus:border-tech-accent" />
+                            <select name="categoria" onChange={handleChange} className="w-full bg-slate-900 border border-slate-700 rounded p-3 outline-none focus:border-tech-accent text-slate-400">
+                                <option>Categoría...</option>
+                                <option>Electrónica</option>
+                                <option>Mecatrónica</option>
+                            </select>
                         </div>
-                        <div>
-                            <label className="block text-sm mb-2 text-slate-400">URL Imagen</label>
-                            <input name="img" onChange={handleChange} className="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-tech-accent outline-none" placeholder="https://..." />
-                        </div>
+                        <input name="img" onChange={handleChange} placeholder="URL de imagen" className="w-full bg-slate-900 border border-slate-700 rounded p-3 outline-none focus:border-tech-accent" />
 
-                        {/* BOTÓN CONECTADO A LA FUNCIÓN */}
-                        <button onClick={handleSubmit} className="w-full bg-tech-accent hover:bg-cyan-400 text-black font-bold py-3 rounded mt-4 transition-all">
-                            Publicar Producto Real
+                        <button onClick={handleSubmit} className="w-full bg-tech-accent hover:bg-cyan-400 text-black font-bold py-3 rounded-lg transition-all">
+                            Verificar y Publicar
                         </button>
                     </div>
-                </div>
 
-                {/* Preview */}
-                <div>
-                    <h3 className="text-xl font-bold mb-6 text-slate-400">Vista Previa</h3>
-                    <div className="bg-tech-card rounded-xl overflow-hidden border border-slate-700 w-full max-w-sm mx-auto shadow-2xl">
-                        <div className="h-64 bg-slate-800 flex items-center justify-center overflow-hidden relative">
-                            {form.img ? <img src={form.img} alt="Preview" className="w-full h-full object-cover" /> : <span className="text-slate-600">Sin Imagen</span>}
-                        </div>
-                        <div className="p-6">
-                            <h4 className="text-xl font-bold mb-2 text-white">{form.nombre || "Nombre"}</h4>
-                            <p className="text-3xl font-bold text-tech-accent">{form.precio || "$0.00"}</p>
+                    {/* PREVIEW */}
+                    <div className="opacity-50 grayscale hover:grayscale-0 transition-all">
+                        <p className="text-xs text-slate-500 mb-2 uppercase">Previsualización</p>
+                        <div className="bg-tech-card rounded-xl overflow-hidden border border-slate-700 p-4">
+                            <h4 className="font-bold">{form.nombre || '---'}</h4>
+                            <p className="text-tech-accent">{form.precio || '$0.00'}</p>
                         </div>
                     </div>
                 </div>
