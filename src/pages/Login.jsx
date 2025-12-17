@@ -48,7 +48,7 @@ export default function Login() {
                             autoFocus
                         />
                     </div>
-                    <button className="w-full bg-tech-accent hover:bg-cyan-400 text-black font-black py-4 rounded-lg transition-all shadow-lg shadow-cyan-500/20 uppercase tracking-widest">
+                    <button type="submit" className="w-full bg-tech-accent hover:bg-cyan-400 text-black font-black py-4 rounded-lg transition-all shadow-lg shadow-cyan-500/20 uppercase tracking-widest">
                         Desbloquear Panel
                     </button>
                 </form>
