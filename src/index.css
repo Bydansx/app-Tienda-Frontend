@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Configuración del tema (Aquí personalizamos los colores en v4) */
+@theme {
+  --color-tech-bg: #0f172a;
+  --color-tech-card: #1e293b;
+  --color-tech-accent: #06b6d4;
+  --font-sans: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--color-tech-bg);
+  color: white;
+}
