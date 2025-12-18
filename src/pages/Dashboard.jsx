@@ -1,112 +1,119 @@
-import { useState } from 'react';
+/* eslint-disable */
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Dashboard({ productos, token, alCerrarSesion, recargarProductos }) {
-    const [form, setForm] = useState({ nombre: "", precio: "", categoria: "Electrónica", descripcion: "", imagen: "" });
+export default function Dashboard() {
+    const navigate = useNavigate();
+    const [productos, setProductos] = useState([]);
+    const [form, setForm] = useState({ nombre: '', precio: '', categoria: '', img: '' });
     const [editandoId, setEditandoId] = useState(null);
+    const token = sessionStorage.getItem('admin_pass');
 
-    // URL DE TU BACKEND
-    const API_URL = "https://app-tienda-vm7j.onrender.com/api/productos";
+    const cargarProductos = useCallback(async () => {
+        try {
+            const res = await fetch('https://app-tienda-vm7j.onrender.com/api/productos');
+            const data = await res.json();
+            setProductos(data);
+        } catch (err) {
+            console.log(err);
+        }
+    }, []);
 
-    const guardarProducto = async (e) => {
+    useEffect(() => {
+        if (!token) {
+            navigate('/admin');
+        } else {
+            cargarProductos();
+        }
+    }, [token, navigate, cargarProductos]);
+
+    const prepararEdicion = (p) => {
+        setEditandoId(p.id);
+        setForm({ nombre: p.nombre, precio: p.precio, categoria: p.categoria || '', img: p.img });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const cancelarEdicion = () => {
+        setEditandoId(null);
+        setForm({ nombre: '', precio: '', categoria: '', img: '' });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const metodo = editandoId ? "PUT" : "POST";
-        const url = editandoId ? `${API_URL}/${editandoId}` : API_URL;
+        const url = editandoId
+            ? `https://app-tienda-vm7j.onrender.com/api/productos/${editandoId}`
+            : 'https://app-tienda-vm7j.onrender.com/api/productos';
 
         try {
-            const res = await fetch(url, {
-                method: metodo,
-                headers: { "Content-Type": "application/json" },
+            await fetch(url, {
+                method: editandoId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, password: token })
             });
-
-            if (res.ok) {
-                alert(editandoId ? "¡Producto Actualizado!" : "¡Producto Creado!");
-                setForm({ nombre: "", precio: "", categoria: "Electrónica", descripcion: "", imagen: "" });
-                setEditandoId(null);
-                recargarProductos();
-            } else {
-                alert("Error: Contraseña incorrecta o fallo en servidor");
-            }
-        } catch (error) {
-            console.error(error);
+            cancelarEdicion();
+            cargarProductos();
+        } catch (err) {
             alert("Error de conexión");
         }
     };
 
-    const borrarProducto = async (id) => {
-        if (!confirm("¿Seguro que quieres borrar esto?")) return;
+    const eliminarProducto = async (id) => {
+        if (!window.confirm("¿Borrar?")) return;
         try {
-            const res = await fetch(`${API_URL}/${id}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
+            await fetch(`https://app-tienda-vm7j.onrender.com/api/productos/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: token })
             });
-            if (res.ok) {
-                alert("Producto eliminado");
-                recargarProductos();
-            }
-        } catch (error) { alert("Error al borrar"); }
+            cargarProductos();
+        } catch (err) {
+            console.log(err);
+        }
     };
 
-    const cargarParaEditar = (prod) => {
-        setForm(prod);
-        setEditandoId(prod.id);
-    };
+    if (!token) return null;
 
     return (
-        <div className="agetronica-app dark-theme">
-            <header className="main-header" style={{background: '#2d0a0a'}}>
-                <div className="container header-content">
-                    <h2 className="logo-text">PANEL DE CONTROL</h2>
-                    <button className="btn btn-outline" onClick={alCerrarSesion}>Cerrar Sesión</button>
-                </div>
-            </header>
-
-            <div className="container main-layout">
-                {/* FORMULARIO */}
-                <div className="admin-form-container">
-                    <h3>{editandoId ? "✏️ Editando Producto" : "➕ Nuevo Producto"}</h3>
-                    <form onSubmit={guardarProducto} className="admin-form">
-                        <input type="text" placeholder="Nombre" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} required className="input-dark" />
-                        <input type="number" placeholder="Precio" value={form.precio} onChange={e => setForm({...form, precio: e.target.value})} required className="input-dark" />
-                        <select value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} className="input-dark">
-                            <option>Electrónica</option>
-                            <option>Eléctrico</option>
-                            <option>Mecatrónico</option>
-                            <option>Módulos</option>
-                            <option>Mecánico</option>
-                        </select>
-                        <textarea placeholder="Descripción" value={form.descripcion} onChange={e => setForm({...form, descripcion: e.target.value})} className="input-dark" rows="3"></textarea>
-                        <input type="text" placeholder="URL de Imagen" value={form.imagen} onChange={e => setForm({...form, imagen: e.target.value})} className="input-dark" />
-
-                        <div className="form-buttons">
-                            <button type="submit" className="btn btn-primary">{editandoId ? "Actualizar" : "Crear"}</button>
-                            {editandoId && <button type="button" onClick={() => {setEditandoId(null); setForm({ nombre: "", precio: "", categoria: "Electrónica", descripcion: "", imagen: "" })}} className="btn btn-outline">Cancelar</button>}
-                        </div>
-                    </form>
+        <div className="min-h-screen bg-black text-white p-8 font-sans">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
+                    <h1 className="text-2xl font-black text-cyan-400">ADMIN DASHBOARD</h1>
+                    <button onClick={() => { sessionStorage.clear(); navigate('/admin'); }} className="text-red-500 font-bold border border-red-500/30 px-4 py-2 rounded">LOGOUT</button>
                 </div>
 
-                {/* LISTA DE PRODUCTOS */}
-                <div className="admin-list">
-                    <h3>Inventario ({productos.length})</h3>
-                    <div className="admin-grid">
-                        {productos.map(p => (
-                            <div key={p.id} className="admin-card">
-                                <div className="admin-card-info">
-                                    <strong>{p.nombre}</strong>
-                                    <span style={{color: '#00d2d3'}}>${p.precio}</span>
-                                </div>
-                                <div className="admin-card-actions">
-                                    <button onClick={() => cargarParaEditar(p)} className="btn-icon">✏️</button>
-                                    <button onClick={() => borrarProducto(p.id)} className="btn-icon delete">🗑️</button>
-                                </div>
+                <div className="grid md:grid-cols-2 gap-10">
+                    <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                        <h2 className="text-lg font-bold mb-6">{editandoId ? 'Editar Item' : 'Nuevo Producto'}</h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <input value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} placeholder="Nombre" className="w-full bg-black/50 border border-slate-700 p-3 rounded-xl text-white" required />
+                            <input value={form.precio} onChange={e => setForm({...form, precio: e.target.value})} placeholder="Precio" className="w-full bg-black/50 border border-slate-700 p-3 rounded-xl text-white" required />
+                            <input value={form.img} onChange={e => setForm({...form, img: e.target.value})} placeholder="URL Imagen" className="w-full bg-black/50 border border-slate-700 p-3 rounded-xl text-white" />
+                            <div className="flex gap-2 pt-2">
+                                <button className="flex-1 bg-cyan-500 text-black font-bold py-3 rounded-xl">{editandoId ? 'ACTUALIZAR' : 'PUBLICAR'}</button>
+                                {editandoId && <button type="button" onClick={cancelarEdicion} className="bg-slate-800 px-4 rounded-xl">X</button>}
                             </div>
-                        ))}
+                        </form>
+                    </div>
+
+                    <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                        <h2 className="text-lg font-bold mb-6 text-slate-500">Inventario</h2>
+                        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                            {productos.map(p => (
+                                <div key={p.id} className="flex justify-between bg-black/40 p-3 rounded-xl border border-slate-800">
+                                    <div className="flex gap-3">
+                                        <img src={p.img || 'https://via.placeholder.com/50'} className="w-10 h-10 object-cover rounded-lg" alt=""/>
+                                        <div><p className="font-bold text-sm">{p.nombre}</p><p className="text-cyan-400 text-xs">{p.precio}</p></div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => prepararEdicion(p)} className="text-yellow-500">✏️</button>
+                                        <button onClick={() => eliminarProducto(p.id)} className="text-red-500">🗑️</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-
-export default Dashboard;
